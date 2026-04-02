@@ -20,7 +20,7 @@ import {
   Unsubscribe,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type { Post, User, Story, Comment } from "@/types";
+import type { Post, User, Story, Comment, Notification } from "@/types";
 
 // ============ Users ============
 
@@ -122,6 +122,15 @@ export async function unlikePost(postId: string, userId: string): Promise<void> 
   });
 }
 
+export async function updatePost(postId: string, data: Partial<Post>): Promise<void> {
+  const postRef = doc(db, "posts", postId);
+  await updateDoc(postRef, {
+    ...data,
+    updatedAt: serverTimestamp(),
+    isEdited: true,
+  });
+}
+
 export async function deletePost(postId: string): Promise<void> {
   await deleteDoc(doc(db, "posts", postId));
 }
@@ -153,7 +162,7 @@ export async function getActiveStories(): Promise<(Story & { storyId: string })[
 
 // ============ Comments ============
 
-export async function addComment(postId: string, commentData: Omit<Comment, "commentId" | "createdAt">): Promise<string> {
+export async function addComment(postId: string, commentData: Omit<Comment, "commentId" | "createdAt" | "postId">): Promise<string> {
   const commentRef = await addDoc(collection(db, "comments"), {
     ...commentData,
     postId,
@@ -175,6 +184,27 @@ export async function getComments(postId: string): Promise<Comment[]> {
   return snapshot.docs.map((doc) => {
     const data = doc.data() as Comment;
     return { ...data, commentId: doc.id };
+  });
+}
+
+export async function deleteComment(commentId: string, postId: string): Promise<void> {
+  await deleteDoc(doc(db, "comments", commentId));
+  await updateDoc(doc(db, "posts", postId), {
+    commentCount: increment(-1),
+  });
+}
+
+export async function likeComment(commentId: string, userId: string): Promise<void> {
+  const commentRef = doc(db, "comments", commentId);
+  await updateDoc(commentRef, {
+    likes: arrayUnion(userId),
+  });
+}
+
+export async function unlikeComment(commentId: string, userId: string): Promise<void> {
+  const commentRef = doc(db, "comments", commentId);
+  await updateDoc(commentRef, {
+    likes: arrayRemove(userId),
   });
 }
 
@@ -214,4 +244,19 @@ export function onNotificationsUpdate(
     }));
     callback(notifications);
   });
+}
+
+// ============ Notifications ============
+
+export async function createNotification(notification: Omit<Notification, "notificationId" | "createdAt">): Promise<string> {
+  const notifRef = await addDoc(collection(db, "notifications"), {
+    ...notification,
+    createdAt: serverTimestamp(),
+  });
+  return notifRef.id;
+}
+
+export async function markNotificationAsRead(notificationId: string): Promise<void> {
+  const notifRef = doc(db, "notifications", notificationId);
+  await updateDoc(notifRef, { isRead: true });
 }

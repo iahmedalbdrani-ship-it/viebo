@@ -1,15 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useAuthStore } from "@/store/authStore";
+import {
+  likePost,
+  unlikePost,
+  getComments,
+} from "@/lib/firestore";
+import CommentThread from "@/components/posts/CommentThread";
+import toast from "react-hot-toast";
 import {
   HiHeart,
   HiChatBubbleOvalLeft,
   HiArrowUpTray,
   HiBookmark,
 } from "react-icons/hi2";
-import type { Post } from "@/types";
+import type { Post, Comment } from "@/types";
 
 interface PostCardProps {
   post: Post;
@@ -18,13 +26,54 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, authorName, authorAvatar }: PostCardProps) {
+  const { user } = useAuthStore();
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likeCount);
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
+  useEffect(() => {
+    // Check if current user has liked this post
+    if (user?.userId && post.likes.includes(user.userId)) {
+      setIsLiked(true);
+    }
+  }, [user, post.likes]);
+
+  const handleLike = async () => {
+    if (!user?.userId) {
+      toast.error("Please log in to like posts");
+      return;
+    }
+
+    try {
+      if (isLiked) {
+        await unlikePost(post.postId, user.userId);
+        setLikeCount((prev) => prev - 1);
+      } else {
+        await likePost(post.postId, user.userId);
+        setLikeCount((prev) => prev + 1);
+      }
+      setIsLiked(!isLiked);
+    } catch (error) {
+      console.error("Error toggling like:", error);
+      toast.error("Failed to update like");
+    }
+  };
+
+  const loadComments = async () => {
+    if (isLoadingComments) return;
+    setIsLoadingComments(true);
+    try {
+      const fetchedComments = await getComments(post.postId);
+      setComments(fetchedComments);
+    } catch (error) {
+      console.error("Error loading comments:", error);
+      toast.error("Failed to load comments");
+    } finally {
+      setIsLoadingComments(false);
+    }
   };
 
   const timeAgo = (date: Date) => {
@@ -99,7 +148,15 @@ export default function PostCard({ post, authorName, authorAvatar }: PostCardPro
                 }`}
               />
             </motion.button>
-            <button>
+            <button
+              onClick={() => {
+                setShowComments(!showComments);
+                if (!showComments && comments.length === 0) {
+                  loadComments();
+                }
+              }}
+              className="transition-colors"
+            >
               <HiChatBubbleOvalLeft className="w-6 h-6 text-text-secondary hover:text-text-primary transition-colors" />
             </button>
             <button>
@@ -140,11 +197,41 @@ export default function PostCard({ post, authorName, authorAvatar }: PostCardPro
 
         {/* Comments count */}
         {post.commentCount > 0 && (
-          <button className="text-text-secondary text-sm mt-2">
+          <button
+            onClick={() => {
+              setShowComments(!showComments);
+              if (!showComments && comments.length === 0) {
+                loadComments();
+              }
+            }}
+            className="text-text-secondary text-sm mt-2 hover:text-text-primary transition-colors"
+          >
             View all {post.commentCount} comments
           </button>
         )}
       </div>
+
+      {/* Comments Section */}
+      {showComments && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="border-t border-white/10 p-4"
+        >
+          {isLoadingComments ? (
+            <p className="text-center text-text-secondary text-sm py-4">
+              Loading comments...
+            </p>
+          ) : (
+            <CommentThread
+              postId={post.postId}
+              comments={comments}
+              onCommentAdded={loadComments}
+            />
+          )}
+        </motion.div>
+      )}
     </motion.div>
   );
 }
