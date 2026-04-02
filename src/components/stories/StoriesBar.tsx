@@ -14,14 +14,16 @@ interface StoryUser {
 
 interface StoriesBarProps {
   stories: StoryUser[];
+  onAddStory?: () => void;
 }
 
-export default function StoriesBar({ stories }: StoriesBarProps) {
+export default function StoriesBar({ stories, onAddStory }: StoriesBarProps) {
   return (
     <div className="flex gap-4 overflow-x-auto py-4 px-4 scrollbar-hide">
       {/* Add Story */}
       <motion.button
         whileTap={{ scale: 0.95 }}
+        onClick={onAddStory}
         className="flex flex-col items-center gap-1.5 flex-shrink-0"
       >
         <div className="w-16 h-16 rounded-full bg-surface border-2 border-dashed border-primary/50 flex items-center justify-center">

@@ -6,6 +6,8 @@ import { getFeedPosts, getUserById } from "@/lib/firestore";
 import StoriesBar from "@/components/stories/StoriesBar";
 import PostCard from "@/components/feed/PostCard";
 import PostCreationModal from "@/components/posts/PostCreationModal";
+import StoryCreation from "@/components/stories/StoryCreation";
+import PostEditor from "@/components/posts/PostEditor";
 import toast from "react-hot-toast";
 import { DocumentSnapshot } from "firebase/firestore";
 import type { Post } from "@/types";
@@ -27,6 +29,8 @@ export default function Home() {
   const [lastDoc, setLastDoc] = useState<DocumentSnapshot | null>(null);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isStoryCreationOpen, setIsStoryCreationOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
 
   // Load initial posts
@@ -159,7 +163,7 @@ export default function Home() {
       />
 
       {/* Stories */}
-      <StoriesBar stories={mockStories} />
+      <StoriesBar stories={mockStories} onAddStory={() => setIsStoryCreationOpen(true)} />
 
       {/* Divider */}
       <div className="h-px bg-white/5 mx-4" />
@@ -197,6 +201,32 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      {/* Story Creation Modal */}
+      <StoryCreation
+        isOpen={isStoryCreationOpen}
+        onClose={() => setIsStoryCreationOpen(false)}
+        onSuccess={() => {
+          // Reload stories after posting
+          setIsStoryCreationOpen(false);
+        }}
+      />
+
+      {/* Post Editor Modal */}
+      {editingPost && (
+        <PostEditor
+          post={editingPost}
+          isOpen={!!editingPost}
+          onClose={() => setEditingPost(null)}
+          onSuccess={() => {
+            // Reload posts after editing
+            setPosts([]);
+            setLastDoc(null);
+            setHasMorePosts(true);
+            setEditingPost(null);
+          }}
+        />
+      )}
     </div>
   );
 }
