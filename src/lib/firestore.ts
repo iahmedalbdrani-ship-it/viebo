@@ -260,3 +260,37 @@ export async function markNotificationAsRead(notificationId: string): Promise<vo
   const notifRef = doc(db, "notifications", notificationId);
   await updateDoc(notifRef, { isRead: true });
 }
+
+// ============ Stories ============
+
+export async function addStoryReaction(
+  storyId: string,
+  userId: string,
+  emoji: string
+): Promise<void> {
+  const storyRef = doc(db, "stories", storyId);
+  await updateDoc(storyRef, {
+    reactions: {
+      ...{}, // Will be merged with existing reactions
+      [userId]: emoji,
+    },
+  });
+}
+
+export async function removeStoryReaction(storyId: string, userId: string): Promise<void> {
+  const storyRef = doc(db, "stories", storyId);
+  const storyDoc = await getDoc(storyRef);
+  if (storyDoc.exists()) {
+    const reactions = storyDoc.data().reactions || {};
+    delete reactions[userId];
+    await updateDoc(storyRef, { reactions });
+  }
+}
+
+export async function addStoryView(storyId: string, userId: string): Promise<void> {
+  const storyRef = doc(db, "stories", storyId);
+  await updateDoc(storyRef, {
+    views: arrayUnion(userId),
+    viewCount: increment(1),
+  });
+}
