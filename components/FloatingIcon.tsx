@@ -71,7 +71,19 @@ export const FloatingIcon: React.FC<FloatingIconProps> = ({
           },
         ]}
       >
-        {/* Glow effect */}
+        {/* Outer glow effect */}
+        <View
+          style={{
+            position: 'absolute',
+            width: size + 30,
+            height: size + 30,
+            borderRadius: (size + 30) / 2,
+            backgroundColor: glowColor,
+            opacity: 0.1,
+          }}
+        />
+
+        {/* Middle glow effect */}
         <View
           style={{
             position: 'absolute',
@@ -79,7 +91,7 @@ export const FloatingIcon: React.FC<FloatingIconProps> = ({
             height: size + 20,
             borderRadius: (size + 20) / 2,
             backgroundColor: glowColor,
-            opacity: 0.15,
+            opacity: 0.2,
           }}
         />
 
@@ -89,12 +101,17 @@ export const FloatingIcon: React.FC<FloatingIconProps> = ({
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
-            width: size + 10,
-            height: size + 10,
-            borderRadius: (size + 10) / 2,
+            width: size + 12,
+            height: size + 12,
+            borderRadius: (size + 12) / 2,
             justifyContent: 'center',
             alignItems: 'center',
-            zIndex: 1,
+            zIndex: 10,
+            shadowColor: glowColor,
+            shadowOpacity: 0.4,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 4 },
+            elevation: 8,
           }}
         >
           <Text style={{ fontSize: size, lineHeight: size }}>{icon}</Text>

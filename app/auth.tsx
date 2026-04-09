@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../constants/colors';
 import { GlassButton } from '../components/GlassButton';
 import { FloatingInput } from '../components/FloatingInput';
@@ -14,6 +15,7 @@ type AuthMode = 'signin' | 'signup';
 
 export default function AuthScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { signIn, signUp, error, loading, clearError } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>('signin');
@@ -86,13 +88,14 @@ export default function AuthScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={[Colors.bg, Colors.bg2]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.container}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={{ flex: 1 }}>
+      <LinearGradient
+        colors={[Colors.bg, Colors.bg2]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.container}
+      >
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]} showsVerticalScrollIndicator={false}>
         {/* Header with floating icons */}
         <View style={styles.header}>
           <View style={styles.iconsContainer}>
@@ -245,7 +248,8 @@ export default function AuthScreen() {
           </View>
         </BlurView>
       </ScrollView>
-    </LinearGradient>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 
