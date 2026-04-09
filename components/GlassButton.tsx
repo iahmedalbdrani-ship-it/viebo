@@ -1,6 +1,5 @@
-import React from 'react';
-import { Text, Pressable, StyleSheet, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import React, { useRef } from 'react';
+import { Text, Pressable, StyleSheet, View, Animated } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/colors';
@@ -24,19 +23,23 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
   icon,
   fullWidth = true,
 }) => {
-  const pressScale = useSharedValue(1);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
-    pressScale.value = withTiming(0.95, { duration: 100 });
+    Animated.timing(scaleAnim, {
+      toValue: 0.95,
+      duration: 100,
+      useNativeDriver: true,
+    }).start();
   };
 
   const handlePressOut = () => {
-    pressScale.value = withTiming(1, { duration: 100 });
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true,
+    }).start();
   };
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pressScale.value }],
-  }));
 
   const isDisabled = disabled || loading;
 
@@ -57,7 +60,7 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
         onPressOut={handlePressOut}
         disabled={isDisabled}
       >
-        <Animated.View style={[animatedStyle, fullWidth && styles.fullWidth]}>
+        <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, fullWidth && styles.fullWidth]}>
           <BlurView intensity={80} style={styles.glassButton}>
             <View
               style={{
@@ -85,7 +88,7 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
         onPressOut={handlePressOut}
         disabled={isDisabled}
       >
-        <Animated.View style={[animatedStyle, fullWidth && styles.fullWidth]}>
+        <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, fullWidth && styles.fullWidth]}>
           <View
             style={[
               styles.button,
@@ -107,7 +110,7 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
       onPressOut={handlePressOut}
       disabled={isDisabled}
     >
-      <Animated.View style={[animatedStyle, fullWidth && styles.fullWidth]}>
+      <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, fullWidth && styles.fullWidth]}>
         <LinearGradient
           colors={[Colors.primary, Colors.secondary]}
           start={{ x: 0, y: 0 }}

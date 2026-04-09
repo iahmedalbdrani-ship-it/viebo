@@ -1,14 +1,5 @@
-import React, { useEffect } from 'react';
-import { Text, StyleSheet, Pressable, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-  Easing,
-  interpolate,
-  Extrapolate,
-} from 'react-native-reanimated';
+import React, { useEffect, useRef } from 'react';
+import { Text, StyleSheet, Pressable, View, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/colors';
 
@@ -25,50 +16,61 @@ export const FloatingIcon: React.FC<FloatingIconProps> = ({
   glowColor = Colors.primary,
   onPress,
 }) => {
-  const floatOffset = useSharedValue(0);
-  const pressScale = useSharedValue(1);
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Continuous floating animation
-    floatOffset.value = withRepeat(
-      withTiming(10, {
-        duration: 3000,
-        easing: Easing.inOut(Easing.ease),
-      }),
-      -1,
-      true
-    );
-  }, [floatOffset]);
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 10,
+          duration: 3000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 3000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [floatAnim]);
 
-  const floatingStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY: floatOffset.value,
-      },
-      {
-        scale: pressScale.value,
-      },
-    ],
-  }));
+  const handlePressIn = () => {
+    Animated.timing(scaleAnim, {
+      toValue: 0.85,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+  };
 
-  const handlePress = () => {
-    pressScale.value = withTiming(0.85, { duration: 150 }, () => {
-      pressScale.value = withTiming(1, { duration: 150 });
-    });
-    onPress?.();
+  const handlePressOut = () => {
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
   };
 
   return (
     <Pressable
-      onPress={handlePress}
-      onPressIn={() => {
-        pressScale.value = 0.85;
-      }}
-      onPressOut={() => {
-        pressScale.value = withTiming(1, { duration: 150 });
-      }}
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
     >
-      <Animated.View style={[floatingStyle, { alignItems: 'center' }]}>
+      <Animated.View
+        style={[
+          { alignItems: 'center' },
+          {
+            transform: [
+              { translateY: floatAnim },
+              { scale: scaleAnim },
+            ],
+          },
+        ]}
+      >
         {/* Glow effect */}
         <View
           style={{
@@ -101,5 +103,3 @@ export const FloatingIcon: React.FC<FloatingIconProps> = ({
     </Pressable>
   );
 };
-
-const styles = StyleSheet.create({});
