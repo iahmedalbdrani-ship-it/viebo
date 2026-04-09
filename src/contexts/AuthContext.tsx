@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import * as WebBrowser from 'expo-web-browser';
 import { supabase } from '../config/supabase';
 import { AuthContextType, AuthState, User } from '../types/auth';
+
+WebBrowser.maybeCompleteAuthSession();
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -200,14 +203,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      // Note: Full Google OAuth implementation requires deeper Expo config
-      // For now, return placeholder
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: 'Google Sign-In requires additional setup',
-      }));
-      return { success: false, error: 'Google Sign-In not yet configured' };
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'viebo://',
+          skipBrowserRedirect: false,
+        },
+      });
+
+      if (error) {
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error: error.message,
+        }));
+        return { success: false, error: error.message };
+      }
+
+      // Handle successful OAuth
+      if (data?.url) {
+        try {
+          await WebBrowser.openAuthSessionAsync(
+            data.url,
+            'viebo://'
+          );
+        } catch (error: any) {
+          console.error('Browser error:', error);
+        }
+      }
+
+      return { success: true };
     } catch (error: any) {
       const errorMessage = error.message || 'Google Sign-In failed';
       setState((prev) => ({

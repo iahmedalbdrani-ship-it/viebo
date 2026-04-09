@@ -4,12 +4,27 @@
     "slug": "viebo",
     "scheme": "viebo",
     "version": "1.0.0",
-    "sdkVersion": "52.0.0",
+    "sdkVersion": "54.0.0",
+    "plugins": [
+      [
+        "expo-auth-session",
+        {
+          "facebookAppId": "",
+          "facebookDisplayName": ""
+        }
+      ]
+    ],
     "ios": {
-      "supportsTabletMode": false
+      "supportsTabletMode": false,
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "com.googleusercontent.apps.YOUR_CLIENT_ID"
+        }
+      }
     },
     "android": {
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffffff",
+      "googleServicesFile": "./google-services.json"
     }
   }
 }

@@ -16,7 +16,7 @@ type AuthMode = 'signin' | 'signup';
 export default function AuthScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { signIn, signUp, error, loading, clearError } = useAuth();
+  const { signIn, signUp, signInWithGoogle, error, loading, clearError } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
@@ -83,6 +83,14 @@ export default function AuthScreen() {
     const result = await signUp(email, password, username);
     if (result.success) {
       // Navigate to email verification or directly to app
+      router.replace('/(tabs)');
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    clearError();
+    const result = await signInWithGoogle();
+    if (result.success) {
       router.replace('/(tabs)');
     }
   };
@@ -223,10 +231,10 @@ export default function AuthScreen() {
               />
 
               <GlassButton
-                title="Sign In with Google"
-                onPress={() => {}}
+                title={loading ? 'Loading...' : 'Sign In with Google'}
+                onPress={handleGoogleSignIn}
                 variant="glass"
-                icon="🔗"
+                icon="🔐"
                 disabled={loading}
                 fullWidth
               />
