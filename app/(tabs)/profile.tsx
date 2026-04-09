@@ -1,10 +1,20 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../../constants/colors';
+import { useAuth } from '../../src/hooks/useAuth';
 
 const MOCK_PHOTOS = Array.from({ length: 6 }, (_, i) => ({ id: String(i + 1) }));
 
 export default function ProfileScreen() {
+  const router = useRouter();
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace('/auth');
+  };
+
   const renderPhotoItem = ({ item }: { item: { id: string } }) => (
     <LinearGradient
       colors={[Colors.primary, Colors.secondary]}
@@ -48,6 +58,10 @@ export default function ProfileScreen() {
 
         <TouchableOpacity style={styles.editButton}>
           <Text style={styles.editButtonText}>Edit Profile</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+          <Text style={styles.signOutButtonText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
 
@@ -150,6 +164,20 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     color: Colors.text,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  signOutButton: {
+    backgroundColor: Colors.danger,
+    borderRadius: 12,
+    paddingHorizontal: 32,
+    paddingVertical: 10,
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  signOutButtonText: {
+    color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },
