@@ -1,5 +1,4 @@
 {
-  "extends": "expo/tsconfig",
   "compilerOptions": {
     "strict": true,
     "jsx": "react-jsx",
@@ -7,6 +6,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "lib": ["es2020", "dom"],
+    "target": "es2020",
+    "module": "esnext"
   }
 }

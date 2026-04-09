@@ -5,11 +5,10 @@ import { StatusBar } from 'expo-status-bar';
 export default function RootLayout() {
   return (
     <UIProvider>
-      <StatusBar barStyle="light-content" backgroundColor="#08080F" />
+      <StatusBar hidden={false} />
       <Stack
         screenOptions={{
           headerShown: false,
-          animationEnabled: true,
         }}
       >
         <Stack.Screen name="index" />

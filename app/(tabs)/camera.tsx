@@ -15,9 +15,7 @@ export default function CameraScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.preview}
         >
-          <View style={styles.cameraIcon}>
-            <Text style={styles.cameraText}>📹</Text>
-          </View>
+          <Text style={styles.cameraIcon}>📹</Text>
           <Text style={styles.previewText}>Camera Preview</Text>
         </LinearGradient>
       </View>
@@ -86,9 +84,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   cameraIcon: {
-    fontSize: 60,
-  },
-  cameraText: {
     fontSize: 60,
   },
   previewText: {
