@@ -5,15 +5,7 @@
     "scheme": "viebo",
     "version": "1.0.0",
     "sdkVersion": "54.0.0",
-    "plugins": [
-      [
-        "expo-auth-session",
-        {
-          "facebookAppId": "",
-          "facebookDisplayName": ""
-        }
-      ]
-    ],
+    "plugins": [],
     "ios": {
       "supportsTabletMode": false,
       "config": {
