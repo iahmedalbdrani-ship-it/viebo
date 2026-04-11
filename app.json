@@ -15,8 +15,7 @@
       }
     },
     "android": {
-      "backgroundColor": "#ffffff",
-      "googleServicesFile": "./google-services.json"
+      "backgroundColor": "#ffffff"
     }
   }
 }

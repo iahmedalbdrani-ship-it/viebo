@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
-import { supabase } from '../config/supabase';
+import { supabase, isSupabaseConfigured } from '../config/supabase';
 import { AuthContextType, AuthState, User } from '../types/auth';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -10,13 +10,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<AuthState>({
     user: null,
-    loading: true,
+    // If Supabase isn't configured, skip loading and allow the app (and tabs) to render in dev mode.
+    loading: isSupabaseConfigured,
     error: null,
-    isAuthenticated: false,
+    // Dev fallback: pretend the user is authenticated so screens like Chat are reachable for UI testing.
+    isAuthenticated: !isSupabaseConfigured,
   });
 
   // Initialize auth state on app load
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      // No backend configured — stay in dev preview mode.
+      return;
+    }
+
     const initializeAuth = async () => {
       try {
         const {

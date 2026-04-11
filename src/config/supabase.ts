@@ -1,12 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error(
-    'Missing Supabase credentials. Make sure EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY are set in .env.local'
+export const isSupabaseConfigured =
+  !!process.env.EXPO_PUBLIC_SUPABASE_URL && !!process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!isSupabaseConfigured) {
+  console.warn(
+    '[Supabase] Missing credentials. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in .env.local. Auth features will be disabled.'
   );
 }
 
@@ -21,6 +24,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 // Helper function to check if user is authenticated
 export const isAuthenticated = async () => {
+  if (!isSupabaseConfigured) return false;
   try {
     const {
       data: { session },
@@ -34,6 +38,7 @@ export const isAuthenticated = async () => {
 
 // Helper function to get current user
 export const getCurrentUser = async () => {
+  if (!isSupabaseConfigured) return null;
   try {
     const {
       data: { user },
