@@ -65,7 +65,7 @@ export default function CameraScreen() {
         mediaTypes: ['images'],
         quality: 0.8,
       });
-      if (!result.cancelled) {
+      if (!result.canceled && result.assets?.[0]) {
         setGalleryImage(result.assets[0].uri);
       }
     }

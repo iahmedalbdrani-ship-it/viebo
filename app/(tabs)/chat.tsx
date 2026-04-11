@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, SafeAreaView, Alert
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { Colors } from '../../constants/colors';
 import FloatingIcons from '../../components/FloatingIcons';
 
@@ -97,6 +98,7 @@ export default function ChatScreen() {
     <TouchableOpacity
       style={styles.chatItemContainer}
       activeOpacity={0.8}
+      onPress={() => router.push(`/conversation/${item.id}`)}
     >
       <BlurView intensity={80} style={styles.blurContainer}>
         <LinearGradient

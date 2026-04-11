@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { UIProvider } from '../contexts/UIContext';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
+import { AudioProvider } from '../src/contexts/AudioContext';
 import { StatusBar } from 'expo-status-bar';
 import { Colors } from '../constants/colors';
 
@@ -34,6 +35,7 @@ function RootLayoutContent() {
       {isAuthenticated ? (
         <>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="conversation/[id]" />
         </>
       ) : (
         <>
@@ -48,10 +50,12 @@ function RootLayoutContent() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <UIProvider>
-        <StatusBar hidden={false} />
-        <RootLayoutContent />
-      </UIProvider>
+      <AudioProvider>
+        <UIProvider>
+          <StatusBar hidden={false} />
+          <RootLayoutContent />
+        </UIProvider>
+      </AudioProvider>
     </AuthProvider>
   );
 }
