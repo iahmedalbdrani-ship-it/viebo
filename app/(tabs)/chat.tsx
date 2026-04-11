@@ -1,8 +1,9 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/colors';
+import FloatingIcons from '../../components/FloatingIcons';
 
 interface ChatItem {
   id: string;
@@ -64,6 +65,21 @@ const MOCK_CHATS: ChatItem[] = [
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
+
+  const floatingIcons = [
+    {
+      name: 'search',
+      onPress: () => Alert.alert('Search', 'Search functionality coming soon'),
+    },
+    {
+      name: 'phone',
+      onPress: () => Alert.alert('Call', 'Voice/video call coming soon'),
+    },
+    {
+      name: 'settings',
+      onPress: () => Alert.alert('Settings', 'Chat settings coming soon'),
+    },
+  ];
 
   const getAvatarGradient = (initials: string) => {
     const colors = [
@@ -158,6 +174,9 @@ export default function ChatScreen() {
           ItemSeparatorComponent={() => <View style={{ height: 2 }} />}
         />
       </LinearGradient>
+
+      {/* Floating Action Icons */}
+      <FloatingIcons icons={floatingIcons} />
     </SafeAreaView>
   );
 }
