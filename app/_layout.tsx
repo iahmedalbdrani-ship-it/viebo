@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { UIProvider } from '../contexts/UIContext';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
@@ -9,6 +9,19 @@ import { Colors } from '../constants/colors';
 
 function RootLayoutContent() {
   const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+  const segments = useSegments();
+
+  useEffect(() => {
+    if (loading) return;
+    const inTabs = segments[0] === '(tabs)';
+    const inConversation = segments[0] === 'conversation';
+    if (!isAuthenticated && (inTabs || inConversation)) {
+      router.replace('/auth');
+    } else if (isAuthenticated && !inTabs && !inConversation) {
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated, loading]);
 
   if (loading) {
     return (
@@ -32,17 +45,10 @@ function RootLayoutContent() {
         animationEnabled: false,
       }}
     >
-      {isAuthenticated ? (
-        <>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="conversation/[id]" />
-        </>
-      ) : (
-        <>
-          <Stack.Screen name="auth" />
-          <Stack.Screen name="index" />
-        </>
-      )}
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="auth" />
+      <Stack.Screen name="index" />
+      <Stack.Screen name="conversation/[id]" />
     </Stack>
   );
 }

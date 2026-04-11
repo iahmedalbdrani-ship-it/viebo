@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../../constants/colors';
-import { Camera } from 'expo-camera';
+import { CameraView, CameraViewRef, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState, useRef, useEffect } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -15,22 +15,15 @@ const FILTERS = [
 ];
 
 export default function CameraScreen() {
-  const cameraRef = useRef<Camera>(null);
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const cameraRef = useRef<CameraViewRef>(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [selectedFilter, setSelectedFilter] = useState('normal');
   const [isRecording, setIsRecording] = useState(false);
-  const [cameraType, setCameraType] = useState<'front' | 'back'>('back');
-  const [flashMode, setFlashMode] = useState<'off' | 'on' | 'auto'>('off');
+  const [facing, setFacing] = useState<'front' | 'back'>('back');
+  const [flash, setFlash] = useState<'off' | 'on' | 'auto'>('off');
   const [galleryImage, setGalleryImage] = useState<string | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const recordingDot = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
 
   useEffect(() => {
     if (isRecording) {
@@ -54,7 +47,9 @@ export default function CameraScreen() {
   const handleTakePicture = async () => {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
-      setCapturedImage(photo.uri);
+      if (photo?.uri) {
+        setCapturedImage(photo.uri);
+      }
     }
   };
 
@@ -74,18 +69,21 @@ export default function CameraScreen() {
   const getFilter = (filterId: string) => FILTERS.find(f => f.id === filterId);
   const filter = getFilter(selectedFilter);
 
-  if (hasPermission === null) {
+  if (!permission) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={styles.permissionText}>Requesting camera permission...</Text>
       </View>
     );
   }
 
-  if (hasPermission === false) {
+  if (!permission.granted) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.permissionText}>Camera permission denied</Text>
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={styles.permissionText}>Camera access is required.</Text>
+        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+          <Text style={styles.permissionButtonText}>Grant Permission</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -124,11 +122,11 @@ export default function CameraScreen() {
     <View style={styles.container}>
       {/* Camera Preview */}
       <View style={styles.cameraContainer}>
-        <Camera
+        <CameraView
           ref={cameraRef}
           style={styles.camera}
-          type={cameraType}
-          flashMode={flashMode}
+          facing={facing}
+          flash={flash}
         >
           {/* Gallery Image Overlay */}
           {galleryImage && (
@@ -153,19 +151,19 @@ export default function CameraScreen() {
         <View style={styles.topControls}>
           <TouchableOpacity
             style={styles.controlIcon}
-            onPress={() => setFlashMode(flashMode === 'off' ? 'on' : flashMode === 'on' ? 'auto' : 'off')}
+            onPress={() => setFlash(flash === 'off' ? 'on' : flash === 'on' ? 'auto' : 'off')}
           >
             <MaterialIcons
-              name={flashMode === 'off' ? 'flash-off' : flashMode === 'on' ? 'flash-on' : 'flash-auto'}
+              name={flash === 'off' ? 'flash-off' : flash === 'on' ? 'flash-on' : 'flash-auto'}
               size={24}
               color={Colors.text}
             />
-            <Text style={styles.controlLabel}>{flashMode}</Text>
+            <Text style={styles.controlLabel}>{flash}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.controlIcon}
-            onPress={() => setCameraType(cameraType === 'back' ? 'front' : 'back')}
+            onPress={() => setFacing(facing === 'back' ? 'front' : 'back')}
           >
             <MaterialIcons name="flip-camera-android" size={24} color={Colors.text} />
           </TouchableOpacity>
@@ -372,5 +370,17 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontSize: 16,
     textAlign: 'center',
+    marginBottom: 16,
+  },
+  permissionButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  permissionButtonText: {
+    color: Colors.text,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
