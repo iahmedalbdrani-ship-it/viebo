@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 
 export default function TabsLayout() {
@@ -17,9 +18,9 @@ export default function TabsLayout() {
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.textSecondary,
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
-          marginTop: 4,
+          fontSize: 10,
+          fontWeight: '600',
+          marginTop: 2,
         },
       }}
     >
@@ -28,13 +29,19 @@ export default function TabsLayout() {
         options={{
           title: 'Feed',
           tabBarLabel: 'Feed',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="home" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="vibe"
+        name="story"
         options={{
-          title: 'Vibe',
-          tabBarLabel: 'Vibe',
+          title: 'Story',
+          tabBarLabel: 'Story',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="auto-awesome" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -42,6 +49,9 @@ export default function TabsLayout() {
         options={{
           title: 'Camera',
           tabBarLabel: 'Camera',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="camera-alt" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -49,6 +59,9 @@ export default function TabsLayout() {
         options={{
           title: 'Chat',
           tabBarLabel: 'Chat',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="chat-bubble" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -56,8 +69,12 @@ export default function TabsLayout() {
         options={{
           title: 'Profile',
           tabBarLabel: 'Profile',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="person" size={size} color={color} />
+          ),
         }}
       />
+      <Tabs.Screen name="vibe" options={{ href: null }} />
     </Tabs>
   );
 }
