@@ -17,12 +17,16 @@ function RootLayoutContent() {
     // Golden rule: do not move if there is loading or if Router is not ready yet
     if (loading || !isNavigationReady) return;
 
-    // Only navigate after ensuring system stability
-    if (isAuthenticated) {
-      router.replace('/(tabs)');
-    } else {
-      router.replace('/auth');
-    }
+    // Delay navigation to next tick to ensure Stack navigator is fully mounted
+    const timer = setTimeout(() => {
+      if (isAuthenticated) {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/auth');
+      }
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [isAuthenticated, loading, isNavigationReady]);
 
   // To fix "Ensure the Root Layout is rendering a navigator" error
