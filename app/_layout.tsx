@@ -1,25 +1,23 @@
 import React, { useEffect } from 'react';
 import { Stack, useRouter, useRootNavigationState } from 'expo-router';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
-import { UIProvider } from '../contexts/UIContext';
+import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 import { AudioProvider } from '../src/contexts/AudioContext';
-import { StatusBar } from 'expo-status-bar';
-import { Colors } from '../constants/colors';
 
 function RootLayoutContent() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
-
-  // Guard: checks if the navigation system is ready
   const rootNavigationState = useRootNavigationState();
-  const isNavigationReady = rootNavigationState?.key;
+
+  // Check if the navigation (Router) system is ready
+  const isNavigationReady = !!rootNavigationState?.key;
 
   useEffect(() => {
-    // If system is still loading or router is not ready, do nothing
+    // Golden rule: do not move if there is loading or if Router is not ready yet
     if (loading || !isNavigationReady) return;
 
-    // Now we are certain the router is completely ready to switch
+    // Only navigate after ensuring system stability
     if (isAuthenticated) {
       router.replace('/(tabs)');
     } else {
@@ -27,10 +25,10 @@ function RootLayoutContent() {
     }
   }, [isAuthenticated, loading, isNavigationReady]);
 
-  // Important: in SDK 54, must always return a navigation structure (Stack or Slot)
-  // even if showing a loading indicator on top of it
+  // To fix "Ensure the Root Layout is rendering a navigator" error
+  // Must always return the Stack even while loading
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
         <Stack.Screen name="index" options={{ href: null }} />
         <Stack.Screen name="auth" />
@@ -38,10 +36,10 @@ function RootLayoutContent() {
         <Stack.Screen name="conversation/[id]" />
       </Stack>
 
-      {/* If app is loading, show Loading layer on top of the Stack */}
+      {/* Loading screen appears as an "overlay" until everything is ready */}
       {(loading || !isNavigationReady) && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color="#FFFFFF" />
         </View>
       )}
     </View>
@@ -52,10 +50,8 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <AudioProvider>
-        <UIProvider>
-          <StatusBar hidden={false} />
-          <RootLayoutContent />
-        </UIProvider>
+        <StatusBar style="light" />
+        <RootLayoutContent />
       </AudioProvider>
     </AuthProvider>
   );
