@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Stack, useRouter, useRootNavigationState, useSegments } from 'expo-router';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -13,11 +13,18 @@ function RootLayoutContent() {
   const router = useRouter();
   const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
+  const isFirstRender = useRef(true);
 
   const isNavigationReady = !!rootNavigationState?.key;
 
   useEffect(() => {
     if (loading || !isNavigationReady) return;
+
+    // Skip first render to ensure Stack is fully mounted before navigating
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
 
     const inTabs = segments[0] === '(tabs)';
     const inAuth = segments[0] === 'auth';
