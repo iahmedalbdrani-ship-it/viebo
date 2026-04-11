@@ -21,8 +21,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!isSupabaseConfigured) {
       // No backend configured — stay in dev preview mode.
+      // Ensure loading is false immediately
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        isAuthenticated: true,
+      }));
       return;
     }
+
+    // Safety timeout: force loading to false after 5 seconds to prevent infinite loading
+    const timeout = setTimeout(() => {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+      }));
+    }, 5000);
 
     const initializeAuth = async () => {
       try {
@@ -94,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => {
+      clearTimeout(timeout);
       subscription?.unsubscribe();
     };
   }, []);
