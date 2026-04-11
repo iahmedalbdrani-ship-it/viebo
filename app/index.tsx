@@ -1,21 +1,24 @@
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { Redirect } from 'expo-router';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { useAuth } from '../src/contexts/AuthContext';
 import { Colors } from '../constants/colors';
 
-export default function SplashScreen() {
-  // Routing is handled by _layout.tsx based on auth state.
-  // This screen is just the initial splash shown until navigation decides where to go.
-  return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.logo}>
-          <View style={styles.logoCircle}>
-            <View style={styles.logoDot} />
-          </View>
-        </View>
+export default function Index() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
         <ActivityIndicator size="large" color={Colors.primary} />
       </View>
-    </View>
-  );
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <Redirect href="/auth" />;
 }
 
 const styles = StyleSheet.create({
@@ -24,31 +27,5 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bg,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  content: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 30,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: Colors.primary,
   },
 });
