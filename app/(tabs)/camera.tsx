@@ -145,7 +145,7 @@ export default function CameraScreen() {
               ]}
             />
           )}
-        </Camera>
+        </CameraView>
 
         {/* Top Controls */}
         <View style={styles.topControls}>
