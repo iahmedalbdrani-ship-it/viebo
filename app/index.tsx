@@ -1,19 +1,9 @@
-import { useEffect } from 'react';
-import { View, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { Colors } from '../constants/colors';
 
 export default function SplashScreen() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace('/(tabs)');
-    }, 2200);
-
-    return () => clearTimeout(timer);
-  }, [router]);
-
+  // Routing is handled by _layout.tsx based on auth state.
+  // This screen is just the initial splash shown until navigation decides where to go.
   return (
     <View style={styles.container}>
       <View style={styles.content}>

@@ -1,49 +1,48 @@
 import React, { useEffect } from 'react';
-import { Stack, useRouter, useRootNavigationState } from 'expo-router';
+import { Stack, useRouter, useRootNavigationState, useSegments } from 'expo-router';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 import { AudioProvider } from '../src/contexts/AudioContext';
+import { Colors } from '../constants/colors';
 
 function RootLayoutContent() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
 
-  // Check if the navigation (Router) system is ready
   const isNavigationReady = !!rootNavigationState?.key;
 
   useEffect(() => {
-    // Golden rule: do not move if there is loading or if Router is not ready yet
     if (loading || !isNavigationReady) return;
 
-    // Delay navigation to next tick to ensure Stack navigator is fully mounted
-    const timer = setTimeout(() => {
-      if (isAuthenticated) {
-        router.replace('/(tabs)');
-      } else {
-        router.replace('/auth');
-      }
-    }, 0);
+    const inTabs = segments[0] === '(tabs)';
+    const inAuth = segments[0] === 'auth';
+    const inConversation = segments[0] === 'conversation';
 
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, loading, isNavigationReady]);
+    // Only navigate if not already at the target destination
+    if (isAuthenticated && !inTabs && !inConversation) {
+      router.replace('/(tabs)');
+    } else if (!isAuthenticated && !inAuth) {
+      router.replace('/auth');
+    }
+  }, [isAuthenticated, loading, isNavigationReady, segments]);
 
-  // To fix "Ensure the Root Layout is rendering a navigator" error
-  // Must always return the Stack even while loading
   return (
     <View style={styles.container}>
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
-        <Stack.Screen name="index" options={{ href: null }} />
+        <Stack.Screen name="index" />
         <Stack.Screen name="auth" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="conversation/[id]" />
       </Stack>
 
-      {/* Loading screen appears as an "overlay" until everything is ready */}
-      {(loading || !isNavigationReady) && (
+      {loading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#FFFFFF" />
+          <ActivityIndicator size="large" color={Colors.primary} />
         </View>
       )}
     </View>
@@ -52,19 +51,27 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <AudioProvider>
-        <StatusBar style="light" />
-        <RootLayoutContent />
-      </AudioProvider>
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <AudioProvider>
+            <StatusBar style="light" />
+            <RootLayoutContent />
+          </AudioProvider>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.bg,
+  },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#000000',
+    backgroundColor: Colors.bg,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
