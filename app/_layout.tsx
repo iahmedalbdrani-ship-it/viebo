@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useRootNavigationState } from 'expo-router';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { UIProvider } from '../contexts/UIContext';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
@@ -10,36 +10,41 @@ import { Colors } from '../constants/colors';
 function RootLayoutContent() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const segments = useSegments();
+
+  // Guard: checks if the navigation system is ready
+  const rootNavigationState = useRootNavigationState();
+  const isNavigationReady = rootNavigationState?.key;
 
   useEffect(() => {
-    if (loading) return;
-    const inTabs = segments[0] === '(tabs)';
-    const inConversation = segments[0] === 'conversation';
-    if (!isAuthenticated && (inTabs || inConversation)) {
-      router.replace('/auth');
-    } else if (isAuthenticated && !inTabs && !inConversation) {
-      router.replace('/(tabs)');
-    }
-  }, [isAuthenticated, loading]);
+    // If system is still loading or router is not ready, do nothing
+    if (loading || !isNavigationReady) return;
 
+    // Now we are certain the router is completely ready to switch
+    if (isAuthenticated) {
+      router.replace('/(tabs)');
+    } else {
+      router.replace('/auth');
+    }
+  }, [isAuthenticated, loading, isNavigationReady]);
+
+  // Important: in SDK 54, must always return a navigation structure (Stack or Slot)
+  // even if showing a loading indicator on top of it
   return (
-    <>
-      {/* Stack must ALWAYS render — expo-router requires navigator to be mounted */}
-      <Stack screenOptions={{ headerShown: false, animation: 'none' }}>
-        <Stack.Screen name="(tabs)" />
+    <View style={{ flex: 1 }}>
+      <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
+        <Stack.Screen name="index" options={{ href: null }} />
         <Stack.Screen name="auth" />
-        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="conversation/[id]" />
       </Stack>
 
-      {/* Loading overlay sits on top — never replaces the Stack */}
-      {loading && (
+      {/* If app is loading, show Loading layer on top of the Stack */}
+      {(loading || !isNavigationReady) && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
       )}
-    </>
+    </View>
   );
 }
 
@@ -59,9 +64,9 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: Colors.bg,
+    backgroundColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 999,
+    zIndex: 1000,
   },
 });
